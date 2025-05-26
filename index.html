@@ -1,99 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Contacts</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Contacts</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        body {
-            background-color: #4CAF50; /* Green background */
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(-45deg, #ff6ec4, #7873f5, #4ecdc4, #f7ff00);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+    }
 
-        .container {
-            text-align: center;
-            padding: 2rem;
-            max-width: 800px;
-            width: 90%;
-        }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
 
-        h1 {
-            color: white;
-            margin-bottom: 2rem;
-            font-size: 2.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
+    .container {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 3rem;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
 
-        .contact-list {
-            list-style: none;
-        }
+    h1 {
+      font-size: 2.5rem;
+      color: #fff;
+      margin-bottom: 2rem;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+    }
 
-        .contact-item {
-            margin: 1.5rem 0;
-        }
+    .contact-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      padding: 0;
+    }
 
-        .contact-link {
-            display: inline-block;
-            padding: 1rem 2rem;
-            background-color: rgba(255, 255, 255, 0.9);
-            color: #333;
-            text-decoration: none;
-            border-radius: 50px;
-            transition: all 0.3s ease;
-            font-weight: bold;
-            width: 100%;
-            max-width: 300px;
-        }
+    .contact-link {
+      display: inline-block;
+      padding: 1rem 2rem;
+      background-color: #ffffffdd;
+      color: #333;
+      text-decoration: none;
+      border-radius: 999px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
 
-        .contact-link:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            background-color: white;
-        }
+    .contact-link:hover {
+      background-color: #fff;
+      transform: scale(1.05);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+    }
 
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .contact-link {
-                padding: 0.8rem 1.5rem;
-                font-size: 0.9rem;
-            }
-        }
-    </style>
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2rem;
+      }
+
+      .contact-link {
+        padding: 0.8rem 1.5rem;
+        font-size: 0.95rem;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Contact Me</h1>
-        <ul class="contact-list">
-            <li class="contact-item">
-                <a href="https://www.t.me/+989351783393" class="contact-link" target="_blank">
-                    Telegram
-                </a>
-            </li>
-            <li class="contact-item">
-                <a href="https://www.wa.me/+989351783393" class="contact-link" target="_blank">
-                    WhatsApp
-                </a>
-            </li>
-            <li class="contact-item">
-                <a href="https://instagram.com/tazeh__bash" class="contact-link" target="_blank">
-                    Instagram
-                </a>
-            </li>
-        </ul>
-    </div>
+  <div class="container">
+    <h1>Contact Me</h1>
+    <ul class="contact-list">
+      <li><a href="https://www.t.me/+989351783393" class="contact-link" target="_blank">Telegram</a></li>
+      <li><a href="https://www.wa.me/+989351783393" class="contact-link" target="_blank">WhatsApp</a></li>
+      <li><a href="https://instagram.com/tazeh__bash" class="contact-link" target="_blank">Instagram</a></li>
+    </ul>
+  </div>
 </body>
 </html>
