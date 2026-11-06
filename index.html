@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>آنتن ۴G آیفونت می‌پره؟</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@700;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #0B1120;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif;
+        }
+
+        /* Stage scaling */
+        .stage-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0B1120;
+        }
+
+        #stage {
+            width: 1080px;
+            height: 1920px;
+            background: radial-gradient(circle at 50% 30%, #1a2335 0%, #0B1120 70%, #111827 100%);
+            position: relative;
+            overflow: hidden;
+            transform-origin: center center;
+            flex-shrink: 0;
+            border-radius: 0;
+        }
+
+        /* Safe zone visual guide (debug only) */
+        .safe-zone {
+            position: absolute;
+            top: 250px;
+            left: 0;
+            width: 100%;
+            height: 1320px; /* 1920 - 250 - 350 */
+            border: 2px dashed rgba(255, 255, 255, 0.08);
+            pointer-events: none;
+            z-index: 999;
+            display: none;
+        }
+
+        /* Floating signal rings background */
+        .bg-rings {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .ring {
+            position: absolute;
+            border: 2px solid rgba(52, 199, 89, 0.08);
+            border-radius: 50%;
+            animation: floatRing 8s ease-in-out infinite;
+        }
+
+        .ring:nth-child(1) {
+            width: 600px;
+            height: 600px;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            animation-delay: 0s;
+        }
+        .ring:nth-child(2) {
+            width: 900px;
+            height: 900px;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            animation-delay: 1.5s;
+            opacity: 0.6;
+        }
+        .ring:nth-child(3) {
+            width: 1200px;
+            height: 1200px;
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            animation-delay: 3s;
+            opacity: 0.3;
+        }
+        .ring:nth-child(4) {
+            width: 400px;
+            height: 400px;
+            bottom: 10%;
+            left: 10%;
+            animation-delay: 2s;
+            opacity: 0.4;
+        }
+        .ring:nth-child(5) {
+            width: 300px;
+            height: 300px;
+            top: 60%;
+            right: 5%;
+            animation-delay: 4s;
+            opacity: 0.3;
+        }
+
+        @keyframes floatRing {
+            0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.2; }
+            50% { transform: translateX(-50%) scale(1.05); opacity: 0.5; }
+        }
+
+        /* Phone mockup */
+        .phone-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            width: 760px;
+            height: 1540px;
+            z-index: 10;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+
+        .phone {
+            width: 100%;
+            height: 100%;
+            background: #F2F2F7;
+            border-radius: 64px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 0 0 12px #1C1C1E, 0 0 0 16px #3A3A3C, 0 40px 80px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Status bar */
+        .status-bar {
+            height: 64px;
+            background: #F2F2F7;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 32px;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1C1C1E;
+            position: relative;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+
+        .status-left, .status-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .signal-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 16px;
+        }
+
+        .signal-bar {
+            width: 4px;
+            background: #1C1C1E;
+            border-radius: 1px;
+            transition: height 0.3s, background 0.3s, opacity 0.3s;
+        }
+        .signal-bar:nth-child(1) { height: 6px; }
+        .signal-bar:nth-child(2) { height: 10px; }
+        .signal-bar:nth-child(3) { height: 14px; }
+        .signal-bar:nth-child(4) { height: 18px; }
+
+        .signal-bar.weak { opacity: 0.3; }
+        .signal-bar.weak.active { opacity: 1; background: #FF9500; }
+
+        .carrier-label {
+            font-size: 14px;
+            font-weight: 600;
+            font-family: system-ui, -apple-system, sans-serif;
+            color: #1C1C1E;
+            min-width: 40px;
+            text-align: center;
+            transition: opacity 0.3s;
+        }
+
+        .carrier-label.no-service {
+            color: #FF3B30;
+            font-weight: 700;
+        }
+
+        .network-type {
+            font-size: 13px;
+            font-weight: 700;
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 1px 6px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .network-type.g5 {
+            color: #34C759;
+            background: rgba(52, 199, 89, 0.12);
+        }
+
+        .network-type.g2 {
+            color: #FF9500;
+            background: rgba(255, 149, 0, 0.12);
+        }
+
+        .network-type.none {
+            display: none;
+        }
+
+        .battery-icon {
+            width: 26px;
+            height: 13px;
+            border: 1.5px solid #1C1C1E;
+            border-radius: 3px;
+            position: relative;
+            opacity: 0.7;
+        }
+        .battery-icon::after {
+            content: '';
+            position: absolute;
+            right: -4px;
+            top: 2px;
+            width: 2px;
+            height: 6px;
+            background: #1C1C1E;
+            border-radius: 0 1px 1px 0;
+        }
+
+        .airplane-indicator {
+            display: none;
+            font-size: 16px;
+        }
+
+        /* iOS Settings list */
+        .settings-content {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            background: #F2F2F7;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #F2F2F7;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 16px 20px 40px 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .screen.hidden-left {
+            transform: translateX(-100%);
+        }
+
+        .screen.hidden-right {
+            transform: translateX(100%);
+        }
+
+        .screen.active {
+            transform: translateX(0);
+        }
+
+        .screen-title {
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 34px;
+            font-weight: 800;
+            color: #1C1C1E;
+            margin-bottom: 16px;
+            padding: 0 4px;
+            text-align: left;
+            direction: ltr;
+        }
+
+        .list-group {
+            background: #FFFFFF;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .list-row {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            min-height: 56px;
+            border-bottom: 1px solid #E5E5EA;
+            direction: ltr;
+            font-family: system-ui, -apple-system, sans-serif;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .list-row:last-child {
+            border-bottom: none;
+        }
+
+        .list-row.highlight {
+            background: #FFF9C4;
+            outline: 3px solid #FFD60A;
+            outline-offset: -3px;
+            border-radius: 12px;
+        }
+
+        .row-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 14px;
+            flex-shrink: 0;
+            font-size: 18px;
+            color: white;
+        }
+
+        .row-icon.gray { background: #8E8E93; }
+        .row-icon.blue { background: #0A84FF; }
+        .row-icon.green { background: #34C759; }
+        .row-icon.orange { background: #FF9500; }
+        .row-icon.red { background: #FF3B30; }
+        .row-icon.purple { background: #AF52DE; }
+        .row-icon.teal { background: #5AC8FA; }
+
+        .row-text {
+            flex: 1;
+            font-size: 20px;
+            font-weight: 500;
+            color: #1C1C1E;
+            text-align: left;
+        }
+
+        .row-text .sub {
+            display: block;
+            font-size: 15px;
+            color: #8E8E93;
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        .row-value {
+            font-size: 20px;
+            color: #8E8E93;
+            margin-right: 8px;
+            font-weight: 400;
+        }
+
+        .chevron {
+            color: #C7C7CC;
+            font-size: 22px;
+            font-weight: 300;
+            margin-left: 4px;
+            transition: transform 0.2s;
+        }
+
+        /* Toggle switch */
+        .toggle {
+            width: 60px;
+            height: 36px;
+            border-radius: 18px;
+            background: #E5E5EA;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+
+        .toggle.on {
+            background: #34C759;
+        }
+
+        .toggle.airplane-on {
+            background: #FF9500;
+        }
+
+        .toggle-knob {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .toggle.on .toggle-knob {
+            transform: translateX(24px);
+        }
+
+        /* Checkmark */
+        .checkmark {
+            color: #0A84FF;
+            font-size: 24px;
+            font-weight: 600;
+            margin-left: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .checkmark.visible {
+            opacity: 1;
+        }
+
+        /* Finger tap circle */
+        .finger-tap {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.35);
+            border: 3px solid rgba(255, 255, 255, 0.7);
+            pointer-events: none;
+            z-index: 100;
+            transform: scale(0);
+            opacity: 0;
+            transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .finger-tap.active {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 28px;
+            height: 28px;
+            border: 3px solid #E5E5EA;
+            border-top-color: #0A84FF;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: auto;
+            margin-right: 8px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .spinner.visible {
+            opacity: 1;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Restart overlay */
+        .restart-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+            border-radius: 64px;
+        }
+
+        .restart-overlay.visible {
+            opacity: 1;
+        }
+
+        .loading-ring {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.15);
+            border-top-color: #FFFFFF;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+
+        /* Persian captions */
+        .caption-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 50;
+            pointer-events: none;
+            padding: 0 20px;
+        }
+
+        .caption-pill {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(248, 250, 252, 0.1);
+            border-radius: 999px;
+            padding: 18px 42px;
+            font-family: 'Vazirmatn', system-ui, sans-serif;
+            font-size: 58px;
+            font-weight: 700;
+            color: #F8FAFC;
+            text-align: center;
+            direction: rtl;
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s, transform 0.4s;
+            line-height: 1.4;
+            letter-spacing: -0.5px;
+        }
+
+        .caption-pill.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Checklist chips */
+        .checklist-chips {
+            position: absolute;
+            bottom: 350px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 16px;
+            z-index: 40;
+            direction: rtl;
+            pointer-events: none;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 90%;
+        }
+
+        .chip {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1.5px solid rgba(248, 250, 252, 0.15);
+            border-radius: 16px;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Vazirmatn', system-ui, sans-serif;
+            font-size: 30px;
+            font-weight: 700;
+            color: #F8FAFC;
+            opacity: 0;
+            transform: scale(0.7);
+            transition: opacity 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            white-space: nowrap;
+        }
+
+        .chip.pop-in {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .chip .chip-check {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(52, 199, 89, 0.15);
+            border: 2px solid #34C759;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #34C759;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .chip.checked .chip-check {
+            background: #34C759;
+            color: #FFFFFF;
+            border-color: #34C759;
+        }
+
+        .chip.checked {
+            border-color: rgba(52, 199, 89, 0.4);
+            background: rgba(52, 199, 89, 0.1);
+        }
+
+        /* 2G badge with strike-through */
+        .badge-2g {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 149, 0, 0.15);
+            border: 2px solid #FF9500;
+            border-radius: 10px;
+            padding: 4px 12px;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #FF9500;
+            position: relative;
+            transition: all 0.4s;
+        }
+
+        .badge-2g.struck {
+            border-color: #FF3B30;
+            color: #FF3B30;
+            background: rgba(255, 59, 48, 0.1);
+        }
+
+        .badge-2g.struck::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            width: 80%;
+            height: 3px;
+            background: #FF3B30;
+            transform: rotate(-15deg);
+            border-radius: 2px;
+        }
+
+        /* Big step numbers */
+        .step-number {
+            position: absolute;
+            font-family: 'Vazirmatn', system-ui, sans-serif;
+            font-size: 260px;
+            font-weight: 900;
+            color: rgba(248, 250, 252, 0.04);
+            z-index: 1;
+            pointer-events: none;
+            line-height: 1;
+            opacity: 0;
+            transition: opacity 0.6s;
+        }
+
+        .step-number.visible {
+            opacity: 1;
+        }
+
+        /* SIM card hopper mini-card */
+        .sim-card-mini {
+            position: absolute;
+            z-index: 45;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1.5px solid rgba(248, 250, 252, 0.15);
+            border-radius: 20px;
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            direction: ltr;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s, transform 0.4s;
+        }
+
+        .sim-card-mini.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .sim-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #FF9500, #FFCC00);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: white;
+            position: relative;
+            transition: transform 0.5s;
+        }
+
+        .sim-icon.hopping {
+            animation: simHop 1.2s ease-in-out infinite;
+        }
+
+        @keyframes simHop {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-20px) rotate(-8deg); }
+            75% { transform: translateX(20px) rotate(8deg); }
+        }
+
+        .sim-arrow {
+            font-size: 28px;
+            color: #0A84FF;
+            font-weight: 700;
+        }
+
+        /* Countdown ring */
+        .countdown-ring {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: 140px;
+            z-index: 60;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .countdown-ring.visible {
+            opacity: 1;
+        }
+
+        .countdown-ring svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .countdown-ring .track {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.15);
+            stroke-width: 8;
+        }
+
+        .countdown-ring .progress {
+            fill: none;
+            stroke: #FF9500;
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 377;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 0.1s linear;
+        }
+
+        .countdown-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Vazirmatn', system-ui, sans-serif;
+            font-size: 56px;
+            font-weight: 900;
+            color: #FFD60A;
+            text-shadow: 0 0 30px rgba(255, 214, 10, 0.5);
+        }
+
+        /* Operator name in status bar */
+        .operator-name {
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #34C759;
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .operator-name.visible {
+            opacity: 1;
+        }
+
+        /* Camera zoom classes */
+        .phone-container.zoom-status {
+            transform: translate(-50%, -50%) scale(1.35);
+        }
+
+        .phone-container.zoom-row {
+            transform: translate(-50%, -50%) scale(1.2) translateY(-60px);
+        }
+
+        .phone-container.zoom-restart {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .phone-container.zoom-result {
+            transform: translate(-50%, -50%) scale(1.15) translateY(-40px);
+        }
+
+        /* Debug time label */
+        #debug-time {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #0F0;
+            font-family: monospace;
+            font-size: 18px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            z-index: 9999;
+            display: none;
+            direction: ltr;
+        }
+
+        /* iOS Grouped table separators */
+        .list-group .list-row:active {
+            background: #E5E5EA;
+        }
+
+        /* RTL adjustments for Persian text */
+        .fa-text {
+            direction: rtl;
+            font-family: 'Vazirmatn', system-ui, sans-serif;
+        }
+
+        .ltr-text {
+            direction: ltr;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        /* Hidden utility */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="stage-wrapper">
+        <div id="stage">
+            <!-- Background rings -->
+            <div class="bg-rings">
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="ring"></div>
+            </div>
+
+            <!-- Safe zone guide (debug only) -->
+            <div class="safe-zone" id="safeZone"></div>
+
+            <!-- Big step numbers -->
+            <div class="step-number" id="stepNum1" style="top: 300px; right: 30px;">۱</div>
+            <div class="step-number" id="stepNum2" style="top: 300px; right: 30px;">۲</div>
+            <div class="step-number" id="stepNum3" style="top: 300px; right: 30px;">۳</div>
+            <div class="step-number" id="stepNum4" style="top: 300px; right: 30px;">۴</div>
+            <div class="step-number" id="stepNum5" style="top: 300px; right: 30px;">✅</div>
+
+            <!-- Phone -->
+            <div class="phone-container" id="phoneContainer">
+                <div class="phone">
+                    <!-- Status bar -->
+                    <div class="status-bar" id="statusBar">
+                        <div class="status-left">
+                            <div class="signal-bars" id="signalBars">
+                                <div class="signal-bar"></div>
+                                <div class="signal-bar"></div>
+                                <div class="signal-bar"></div>
+                                <div class="signal-bar"></div>
+                            </div>
+                            <div class="operator-name" id="operatorName">IR-TCI</div>
+                            <span class="airplane-indicator" id="airplaneIndicator">✈️</span>
+                        </div>
+                        <div class="status-center">
+                            <span class="carrier-label no-service" id="carrierLabel">No Service</span>
+                            <span class="network-type none" id="networkType"></span>
+                        </div>
+                        <div class="status-right">
+                            <span style="font-size:15px;font-weight:600;">100%</span>
+                            <div class="battery-icon"></div>
+                        </div>
+                    </div>
+
+                    <!-- Settings content -->
+                    <div class="settings-content" id="settingsContent">
+                        <!-- Screen 0: Main Settings (Home) -->
+                        <div class="screen active" id="screenMain">
+                            <div class="screen-title">Settings</div>
+                            <div class="list-group">
+                                <div class="list-row" id="rowAirplane">
+                                    <div class="row-icon orange">✈️</div>
+                                    <div class="row-text">Airplane Mode</div>
+                                    <div class="toggle" id="airplaneToggle">
+                                        <div class="toggle-knob"></div>
+                                    </div>
+                                </div>
+                                <div class="list-row">
+                                    <div class="row-icon blue">📶</div>
+                                    <div class="row-text">Cellular</div>
+                                    <span class="chevron">›</span>
+                                </div>
+                                <div class="list-row">
+                                    <div class="row-icon green">📞</div>
+                                    <div class="row-text">Phone</div>
+                                    <span class="chevron">›</span>
+                                </div>
+                            </div>
+                            <div class="list-group">
+                                <div class="list-row">
+                                    <div class="row-icon gray">🔒</div>
+                                    <div class="row-text">Privacy & Security</div>
+                                    <span class="chevron">›</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Screen 1: Cellular -->
+                        <div class="screen hidden-right" id="screenCellular">
+                            <div class="screen-title" style="font-size:30px;">Cellular</div>
+                            <div class="list-group">
+                                <div class="list-row">
+                                    <div class="row-icon green">📱</div>
+                                    <div class="row-text">Cellular Data</div>
+                                    <div class="toggle on"><div class="toggle-knob"></div></div>
+                                </div>
+                                <div class="list-row" id="rowNetworkSelection">
+                                    <div class="row-icon blue">📡</div>
+                                    <div class="row-text">Network Selection</div>
+                                    <span class="chevron">›</span>
+                                </div>
+                                <div class="list-row" id="rowDataOptions">
+                                    <div class="row-icon teal">⚙️</div>
+                                    <div class="row-text">Cellular Data Options</div>
+                                    <span class="chevron">›</span>
+                                </div>
+                            </div>
+                            <div class="list-group">
+                                <div class="list-row">
+                                    <div class="row-icon purple">🔄</div>
+                                    <div class="row-text">SIM Applications</div>
+                                    <span class="chevron">›</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Screen 2: Network Selection -->
+                        <div class="screen hidden-right" id="screenNetwork">
+                            <div class="screen-title" style="font-size:28px;">Network Selection</div>
+                            <div class="list-group">
+                                <div class="list-row" id="rowAutomatic">
+                                    <div class="row-text">Automatic</div>
+                                    <div class="toggle on" id="autoToggle">
+                                        <div class="toggle-knob"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="list-group" id="networkList" style="opacity:0;transition:opacity 0.4s;">
+                                <div class="list-row" id="net432_11">
+                                    <div class="row-text">432 11</div>
+                                    <span class="checkmark">✓</span>
+                                </div>
+                                <div class="list-row" id="net432_35">
+                                    <div class="row-text">432 35</div>
+                                    <span class="checkmark">✓</span>
+                                </div>
+                                <div class="list-row" id="net432_20">
+                                    <div class="row-text">432 20</div>
+                                    <span class="checkmark">✓</span>
+                                </div>
+                            </div>
+                            <div class="spinner" id="netSpinner"></div>
+                        </div>
+
+                        <!-- Screen 3: Privacy & Security -->
+                        <div class="screen hidden-right" id="screenPrivacy">
+                            <div class="screen-title" style="font-size:28px;">Privacy & Security</div>
+                            <div class="list-group" id="privacyList">
+                                <div class="list-row"><div class="row-icon blue">🔒</div><div class="row-text">Privacy</div><span class="chevron">›</span></div>
+                                <div class="list-row"><div class="row-icon gray">🛡️</div><div class="row-text">Security</div><span class="chevron">›</span></div>
+                                <div class="list-row"><div class="row-icon orange">📍</div><div class="row-text">Location Services</div><span class="chevron">›</span></div>
+                                <div class="list-row"><div class="row-icon gray">🔐</div><div class="row-text">Lockdown Mode</div><span class="chevron">›</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Screen 4: Lockdown Mode -->
+                        <div class="screen hidden-right" id="screenLockdown">
+                            <div class="screen-title" style="font-size:26px;">Lockdown Mode</div>
+                            <div class="list-group">
+                                <div class="list-row" id="rowTurnOnLockdown">
+                                    <div class="row-text" style="color:#0A84FF;font-weight:600;">Turn On Lockdown Mode</div>
+                                    <span class="chevron">›</span>
+                                </div>
+                            </div>
+                            <div style="padding: 0 16px; font-family: system-ui; font-size: 15px; color: #8E8E93; line-height: 1.5; direction: ltr; text-align: left;">
+                                Lockdown Mode is an extreme, optional protection for your iPhone.
+                            </div>
+                        </div>
+
+                        <!-- Screen 5: Lockdown confirmation -->
+                        <div class="screen hidden-right" id="screenLockdownConfirm">
+                            <div class="screen-title" style="font-size:26px;">Turn On Lockdown Mode</div>
+                            <div class="list-group">
+                                <div class="list-row" id="rowTurnOnRestart">
+                                    <div class="row-text" style="color:#FF3B30;font-weight:600;">Turn On & Restart</div>
+                                    <span class="chevron">›</span>
+                                </div>
+                            </div>
+                            <div style="padding: 0 16px; font-family: system-ui; font-size: 15px; color: #8E8E93; line-height: 1.5; direction: ltr; text-align: left;">
+                                Your iPhone will restart to apply Lockdown Mode.
+                            </div>
+                        </div>
+
+                        <!-- Screen 6: Cellular Data Options -->
+                        <div class="screen hidden-right" id="screenDataOptions">
+                            <div class="screen-title" style="font-size:26px;">Cellular Data Options</div>
+                            <div class="list-group">
+                                <div class="list-row" id="rowVoiceData">
+                                    <div class="row-text">Voice & Data</div>
+                                    <span class="row-value" id="voiceDataValue">5G On</span>
+                                    <span class="chevron">›</span>
+                                </div>
+                                <div class="list-row">
+                                    <div class="row-text">Data Roaming</div>
+                                    <div class="toggle"><div class="toggle-knob"></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Screen 7: Voice & Data -->
+                        <div class="screen hidden-right" id="screenVoiceData">
+                            <div class="screen-title" style="font-size:26px;">Voice & Data</div>
+                            <div class="list-group">
+                                <div class="list-row" id="row5GAuto">
+                                    <div class="row-text">5G Auto</div>
+                                    <span class="checkmark" id="check5GAuto">✓</span>
+                                </div>
+                                <div class="list-row" id="row5GOn">
+                                    <div class="row-text">5G On</div>
+                                    <span class="checkmark" id="check5GOn">✓</span>
+                                </div>
+                                <div class="list-row" id="rowLTE">
+                                    <div class="row-text">LTE</div>
+                                    <span class="checkmark" id="checkLTE">✓</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Restart overlay -->
+                    <div class="restart-overlay" id="restartOverlay">
+                        <div class="loading-ring"></div>
+                    </div>
+
+                    <!-- Finger tap indicator -->
+                    <div class="finger-tap" id="fingerTap"></div>
+
+                    <!-- Countdown ring -->
+                    <div class="countdown-ring" id="countdownRing">
+                        <svg viewBox="0 0 140 140">
+                            <circle class="track" cx="70" cy="70" r="60"></circle>
+                            <circle class="progress" id="countdownProgress" cx="70" cy="70" r="60"></circle>
+                        </svg>
+                        <div class="countdown-text" id="countdownText">۲</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Checklist chips -->
+            <div class="checklist-chips" id="checklistChips">
+                <div class="chip" id="chip2G">
+                    <div class="chip-check">✓</div>
+                    <span>۲G</span>
+                </div>
+                <div class="chip" id="chipLockdown">
+                    <div class="chip-check">✓</div>
+                    <span>لاک‌داون</span>
+                </div>
+                <div class="chip" id="chip5GAuto">
+                    <div class="chip-check">✓</div>
+                    <span>5G Auto</span>
+                </div>
+                <div class="chip" id="chipAirplane">
+                    <div class="chip-check">✓</div>
+                    <span>حالت پرواز</span>
+                </div>
+            </div>
+
+            <!-- SIM card mini card -->
+            <div class="sim-card-mini" id="simCardMini" style="top: 750px; left: 50%; transform: translateX(-50%);">
+                <div class="sim-icon" id="simIcon">📱</div>
+                <div style="font-family: system-ui; font-size: 16px; color: #F8FAFC; direction: ltr;">SIM</div>
+                <div class="sim-arrow" id="simArrow">⇄</div>
+                <div class="sim-icon" id="simIcon2" style="background: linear-gradient(135deg, #0A84FF, #5AC8FA);">📱</div>
+            </div>
+
+            <!-- Caption -->
+            <div class="caption-container" style="bottom: 120px;">
+                <div class="caption-pill" id="captionPill">آنتن ۴G آیفونت می‌پره؟</div>
+            </div>
+
+            <!-- Debug time -->
+            <div id="debug-time">0.00s</div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // MASTER CLOCK & TIMING
+        // ============================================================
+        const T = {
+            // HOOK (0-3s)
+            hookStart: 0.0,
+            hookStatusFlash: 0.3,
+            hookNoService: 0.9,
+            hookRedPulse: 1.1,
+            hookCaption: 0.0,
+            hookChips: 1.3,   // chips pop in one by one
+            hookChipDelay: 0.15,
+            hookEnd: 3.0,
+
+            // STEP 1 (3-10s)
+            step1Start: 3.0,
+            step1Caption1: 3.2,
+            step1PushCellular: 3.5,
+            step1TapNetwork: 4.3,
+            step1AutoOff: 5.0,
+            step1Spinner: 5.1,
+            step1SpinnerEnd: 6.1,
+            step1NetworkList: 6.1,
+            step1TapOperator: 6.8,
+            step1Check: 7.0,
+            step1StatusChange: 7.3,
+            step1Caption2: 7.8,
+            step1SimCard: 8.3,
+            step1SimCardEnd: 9.8,
+            step1End: 10.0,
+
+            // STEP 2 (10-17s)
+            step2Start: 10.0,
+            step2Caption1: 10.2,
+            step2PushPrivacy: 10.6,
+            step2Scroll: 11.2,
+            step2PushLockdown: 11.8,
+            step2TapTurnOn: 12.5,
+            step2PushConfirm: 13.0,
+            step2TapRestart: 13.5,
+            step2FadeBlack: 14.0,
+            step2Loading: 14.2,
+            step2ScreenBack: 15.5,
+            step2Caption2: 15.8,
+            step2Strike2G: 16.0,
+            step2End: 17.0,
+
+            // STEP 3 (17-21s)
+            step3Start: 17.0,
+            step3Caption: 17.2,
+            step3PushCellular: 17.5,
+            step3PushDataOptions: 18.2,
+            step3PushVoiceData: 18.9,
+            step3Tap5GAuto: 19.5,
+            step3Check: 19.7,
+            step3Highlight: 19.8,
+            step3End: 21.0,
+
+            // STEP 4 (21-26s)
+            step4Start: 21.0,
+            step4Caption: 21.2,
+            step4PushMain: 21.5,
+            step4TapAirplane: 22.2,
+            step4AirplaneOn: 22.4,
+            step4Countdown: 22.8,
+            step4CountdownEnd: 24.8,
+            step4AirplaneOff: 25.0,
+            step4End: 26.0,
+
+            // RESULT (26-30s)
+            resultStart: 26.0,
+            resultCaption1: 26.2,
+            resultStatusFill: 26.3,
+            resultOperatorName: 26.6,
+            result5GPop: 27.2,
+            resultCheckChips: 27.8,
+            resultChipDelay: 0.3,
+            resultCaption2: 28.5,
+            resultFinalEase: 29.5,
+            end: 30.0
+        };
+
+        // ============================================================
+        // STATE
+        // ============================================================
+        let startTime = null;
+        let elapsed = 0;
+        let rafId = null;
+        let debugMode = false;
+
+        // DOM refs
+        const stage = document.getElementById('stage');
+        const phoneContainer = document.getElementById('phoneContainer');
+        const statusBar = document.getElementById('statusBar');
+        const signalBars = document.querySelectorAll('.signal-bar');
+        const carrierLabel = document.getElementById('carrierLabel');
+        const networkType = document.getElementById('networkType');
+        const operatorName = document.getElementById('operatorName');
+        const airplaneIndicator = document.getElementById('airplaneIndicator');
+        const fingerTap = document.getElementById('fingerTap');
+        const captionPill = document.getElementById('captionPill');
+        const checklistChips = document.getElementById('checklistChips');
+        const simCardMini = document.getElementById('simCardMini');
+        const restartOverlay = document.getElementById('restartOverlay');
+        const countdownRing = document.getElementById('countdownRing');
+        const countdownProgress = document.getElementById('countdownProgress');
+        const countdownText = document.getElementById('countdownText');
+        const debugTime = document.getElementById('debug-time');
+
+        // Screens
+        const screenMain = document.getElementById('screenMain');
+        const screenCellular = document.getElementById('screenCellular');
+        const screenNetwork = document.getElementById('screenNetwork');
+        const screenPrivacy = document.getElementById('screenPrivacy');
+        const screenLockdown = document.getElementById('screenLockdown');
+        const screenLockdownConfirm = document.getElementById('screenLockdownConfirm');
+        const screenDataOptions = document.getElementById('screenDataOptions');
+        const screenVoiceData = document.getElementById('screenVoiceData');
+
+        // Chips
+        const chip2G = document.getElementById('chip2G');
+        const chipLockdown = document.getElementById('chipLockdown');
+        const chip5GAuto = document.getElementById('chip5GAuto');
+        const chipAirplane = document.getElementById('chipAirplane');
+
+        // ============================================================
+        // HELPER: show/hide screens
+        // ============================================================
+        function showScreen(screen) {
+            [screenMain, screenCellular, screenNetwork, screenPrivacy, screenLockdown, screenLockdownConfirm, screenDataOptions, screenVoiceData].forEach(s => {
+                s.classList.add('hidden-right');
+                s.classList.remove('active');
+            });
+            screen.classList.remove('hidden-right');
+            screen.classList.add('active');
+        }
+
+        // ============================================================
+        // HELPER: finger tap
+        // ============================================================
+        let tapTimeout = null;
+        function doTap(x, y) {
+            fingerTap.style.left = (x - 30) + 'px';
+            fingerTap.style.top = (y - 30) + 'px';
+            fingerTap.classList.add('active');
+            if (tapTimeout) clearTimeout(tapTimeout);
+            tapTimeout = setTimeout(() => {
+                fingerTap.classList.remove('active');
+            }, 280);
+        }
+
+        // ============================================================
+        // HELPER: set status bar state
+        // ============================================================
+        function setNoService() {
+            carrierLabel.textContent = 'No Service';
+            carrierLabel.classList.add('no-service');
+            carrierLabel.style.display = '';
+            networkType.className = 'network-type none';
+            networkType.textContent = '';
+            signalBars.forEach(b => { b.style.opacity = '0.25'; b.style.background = '#1C1C1E'; b.style.height = '6px'; });
+            operatorName.classList.remove('visible');
+            airplaneIndicator.style.display = 'none';
+        }
+
+        function set2G() {
+            carrierLabel.textContent = '';
+            carrierLabel.style.display = 'none';
+            networkType.className = 'network-type g2';
+            networkType.textContent = '2G';
+            signalBars.forEach((b, i) => {
+                b.style.opacity = i < 2 ? '1' : '0.25';
+                b.style.background = i < 2 ? '#FF9500' : '#1C1C1E';
+                b.style.height = (i < 2 ? 10 : 6) + 'px';
+            });
+            operatorName.classList.remove('visible');
+            airplaneIndicator.style.display = 'none';
+        }
+
+        function set5G() {
+            carrierLabel.textContent = '';
+            carrierLabel.style.display = 'none';
+            networkType.className = 'network-type g5';
+            networkType.textContent = '5G';
+            signalBars.forEach((b, i) => {
+                b.style.opacity = '1';
+                b.style.background = '#1C1C1E';
+                b.style.height = (6 + i * 4) + 'px';
+            });
+            operatorName.classList.add('visible');
+            airplaneIndicator.style.display = 'none';
+        }
+
+        function setAirplane() {
+            airplaneIndicator.style.display = 'inline';
+            signalBars.forEach(b => { b.style.opacity = '0.15'; });
+            carrierLabel.style.display = 'none';
+            networkType.className = 'network-type none';
+            operatorName.classList.remove('visible');
+        }
+
+        // ============================================================
+        // HELPER: caption
+        // ============================================================
+        function showCaption(text) {
+            captionPill.textContent = text;
+            captionPill.classList.add('visible');
+        }
+
+        function hideCaption() {
+            captionPill.classList.remove('visible');
+        }
+
+        // ============================================================
+        // HELPER: highlight row
+        // ============================================================
+        function highlightRow(row, duration) {
+            row.classList.add('highlight');
+            setTimeout(() => row.classList.remove('highlight'), duration || 800);
+        }
+
+        // ============================================================
+        // MASTER ANIMATION LOOP
+        // ============================================================
+        function animate(now) {
+            if (!startTime) startTime = now;
+            elapsed = (now - startTime) / 1000;
+
+            if (elapsed >= 30.0) {
+                elapsed = 30.0;
+                render(30.0);
+                if (debugMode) debugTime.textContent = '30.00s';
+                return; // stop loop
+            }
+
+            render(elapsed);
+
+            if (debugMode) {
+                debugTime.textContent = elapsed.toFixed(2) + 's';
+            }
+
+            rafId = requestAnimationFrame(animate);
+        }
+
+        // ============================================================
+        // RENDER: all visual states based on elapsed time
+        // ============================================================
+        function render(t) {
+            // ---- HOOK (0-3s) ----
+            if (t >= T.hookStart && t < T.hookEnd) {
+                phoneContainer.className = 'phone-container zoom-status';
+
+                // Status flash: 5G → No Service
+                if (t < T.hookStatusFlash) {
+                    setNoService();
+                    // Quick 5G flash
+                    networkType.className = 'network-type g5';
+                    networkType.textContent = '5G';
+                    carrierLabel.style.display = 'none';
+                } else if (t < T.hookNoService) {
+                    setNoService();
+                } else if (t < T.hookRedPulse) {
+                    setNoService();
+                } else {
+                    setNoService();
+                    // Red pulse effect on No Service
+                    const pulse = 0.5 + 0.5 * Math.sin((t - T.hookRedPulse) * 8);
+                    carrierLabel.style.opacity = 0.6 + 0.4 * pulse;
+                }
+
+                showCaption('آنتن ۴G آیفونت می‌پره؟');
+
+                // Chips pop in
+                if (t >= T.hookChips) {
+                    chip2G.classList.add('pop-in');
+                }
+                if (t >= T.hookChips + T.hookChipDelay) {
+                    chipLockdown.classList.add('pop-in');
+                }
+                if (t >= T.hookChips + T.hookChipDelay * 2) {
+                    chip5GAuto.classList.add('pop-in');
+                }
+                if (t >= T.hookChips + T.hookChipDelay * 3) {
+                    chipAirplane.classList.add('pop-in');
+                }
+            }
+
+            // ---- STEP 1 (3-10s) ----
+            if (t >= T.step1Start && t < T.step1End) {
+                phoneContainer.className = 'phone-container zoom-row';
+
+                if (t >= T.step1PushCellular && t < T.step1TapNetwork) {
+                    showScreen(screenCellular);
+                    phoneContainer.className = 'phone-container zoom-row';
+                }
+
+                if (t >= T.step1TapNetwork) {
+                    showScreen(screenNetwork);
+                }
+
+                // Caption 1
+                if (t >= T.step1Caption1 && t < T.step1Caption2) {
+                    showCaption('اول آنتن ۲G بگیر');
+                }
+
+                // Auto toggle OFF
+                if (t >= T.step1AutoOff) {
+                    document.getElementById('autoToggle').classList.remove('on');
+                    // Spinner
+                    if (t >= T.step1Spinner && t < T.step1SpinnerEnd) {
+                        document.getElementById('netSpinner').classList.add('visible');
+                        doTap(400, 500);
+                    } else {
+                        document.getElementById('netSpinner').classList.remove('visible');
+                    }
+                }
+
+                // Network list appears
+                if (t >= T.step1NetworkList) {
+                    document.getElementById('networkList').style.opacity = '1';
+                }
+
+                // Tap operator
+                if (t >= T.step1TapOperator && t < T.step1Check) {
+                    doTap(300, 600);
+                }
+                if (t >= T.step1Check) {
+                    document.querySelectorAll('#networkList .checkmark').forEach(c => c.classList.remove('visible'));
+                    document.querySelector('#net432_11 .checkmark').classList.add('visible');
+                    highlightRow(document.getElementById('net432_11'), 600);
+                }
+
+                // Status change to 2G
+                if (t >= T.step1StatusChange) {
+                    set2G();
+                }
+
+                // Caption 2
+                if (t >= T.step1Caption2 && t < T.step1End) {
+                    showCaption('یا سیم‌کارت رو جابه‌جا کن');
+                }
+
+                // SIM card mini
+                if (t >= T.step1SimCard && t < T.step1SimCardEnd) {
+                    simCardMini.classList.add('visible');
+                    document.getElementById('simIcon').classList.add('hopping');
+                    document.getElementById('simIcon2').classList.add('hopping');
+                } else {
+                    simCardMini.classList.remove('visible');
+                    document.getElementById('simIcon').classList.remove('hopping');
+                    document.getElementById('simIcon2').classList.remove('hopping');
+                }
+            }
+
+            // ---- STEP 2 (10-17s) ----
+            if (t >= T.step2Start && t < T.step2End) {
+                phoneContainer.className = 'phone-container zoom-restart';
+
+                if (t >= T.step2PushPrivacy && t < T.step2PushLockdown) {
+                    showScreen(screenPrivacy);
+                }
+
+                if (t >= T.step2PushLockdown && t < T.step2TapTurnOn) {
+                    showScreen(screenLockdown);
+                    // Quick scroll effect
+                    if (t >= T.step2Scroll) {
+                        screenLockdown.scrollTop = 100;
+                    }
+                }
+
+                if (t >= T.step2TapTurnOn) {
+                    doTap(300, 400);
+                    highlightRow(document.getElementById('rowTurnOnLockdown'), 500);
+                }
+
+                if (t >= T.step2PushConfirm) {
+                    showScreen(screenLockdownConfirm);
+                }
+
+                if (t >= T.step2TapRestart) {
+                    doTap(300, 400);
+                    highlightRow(document.getElementById('rowTurnOnRestart'), 500);
+                }
+
+                // Fade to black
+                if (t >= T.step2FadeBlack && t < T.step2ScreenBack) {
+                    restartOverlay.classList.add('visible');
+                } else if (t >= T.step2ScreenBack) {
+                    restartOverlay.classList.remove('visible');
+                }
+
+                // Caption 1
+                if (t >= T.step2Caption1 && t < T.step2Caption2) {
+                    showCaption('لاک‌داون رو روشن کن 🔒');
+                }
+
+                // Caption 2
+                if (t >= T.step2Caption2) {
+                    showCaption('گوشی ریستارت میشه');
+                }
+
+                // Strike through 2G badge
+                if (t >= T.step2Strike2G) {
+                    networkType.style.textDecoration = 'line-through';
+                    networkType.style.color = '#FF3B30';
+                    networkType.style.border = '2px solid #FF3B30';
+                }
+            }
+
+            // ---- STEP 3 (17-21s) ----
+            if (t >= T.step3Start && t < T.step3End) {
+                phoneContainer.className = 'phone-container zoom-row';
+
+                if (t >= T.step3PushCellular && t < T.step3PushDataOptions) {
+                    showScreen(screenCellular);
+                }
+                if (t >= T.step3PushDataOptions && t < T.step3PushVoiceData) {
+                    showScreen(screenDataOptions);
+                }
+                if (t >= T.step3PushVoiceData) {
+                    showScreen(screenVoiceData);
+                }
+
+                showCaption('روی 5G Auto بذار');
+
+                if (t >= T.step3Tap5GAuto) {
+                    doTap(300, 450);
+                }
+
+                if (t >= T.step3Check) {
+                    document.getElementById('check5GAuto').classList.add('visible');
+                    document.getElementById('check5GOn').classList.remove('visible');
+                    document.getElementById('checkLTE').classList.remove('visible');
+                }
+
+                if (t >= T.step3Highlight) {
+                    highlightRow(document.getElementById('row5GAuto'), 800);
+                    document.getElementById('voiceDataValue').textContent = '5G Auto';
+                }
+            }
+
+            // ---- STEP 4 (21-26s) ----
+            if (t >= T.step4Start && t < T.step4End) {
+                phoneContainer.className = 'phone-container';
+
+                if (t >= T.step4PushMain) {
+                    showScreen(screenMain);
+                }
+
+                showCaption('یه بار حالت پرواز ✈️');
+
+                // Tap airplane toggle
+                if (t >= T.step4TapAirplane && t < T.step4AirplaneOff) {
+                    document.getElementById('airplaneToggle').classList.add('on');
+                    document.getElementById('airplaneToggle').classList.add('airplane-on');
+                    setAirplane();
+                }
+
+                if (t >= T.step4AirplaneOff) {
+                    document.getElementById('airplaneToggle').classList.remove('on');
+                    document.getElementById('airplaneToggle').classList.remove('airplane-on');
+                    setNoService();
+                }
+
+                // Countdown
+                if (t >= T.step4Countdown && t < T.step4CountdownEnd) {
+                    countdownRing.classList.add('visible');
+                    const progress = (t - T.step4Countdown) / (T.step4CountdownEnd - T.step4Countdown);
+                    countdownProgress.style.strokeDashoffset = 377 * progress;
+                    if (progress < 0.5) {
+                        countdownText.textContent = '۲';
+                    } else {
+                        countdownText.textContent = '۱';
+                    }
+                } else {
+                    countdownRing.classList.remove('visible');
+                }
+            }
+
+            // ---- RESULT (26-30s) ----
+            if (t >= T.resultStart) {
+                phoneContainer.className = 'phone-container zoom-result';
+
+                // Status bar fill bar by bar
+                if (t >= T.resultStatusFill) {
+                    const fillProgress = Math.min(1, (t - T.resultStatusFill) / 0.8);
+                    signalBars.forEach((b, i) => {
+                        if (fillProgress > i * 0.2) {
+                            b.style.opacity = '1';
+                            b.style.background = '#1C1C1E';
+                            b.style.height = (6 + i * 4) + 'px';
+                        }
+                    });
+                }
+
+                // Operator name
+                if (t >= T.resultOperatorName) {
+                    operatorName.classList.add('visible');
+                }
+
+                // 5G pop in with glow
+                if (t >= T.result5GPop) {
+                    networkType.className = 'network-type g5';
+                    networkType.textContent = '5G';
+                    networkType.style.display = '';
+                    carrierLabel.style.display = 'none';
+                    const glow = Math.sin((t - T.result5GPop) * 4) * 0.5 + 0.5;
+                    networkType.style.textShadow = `0 0 ${20 + glow * 20}px rgba(52, 199, 89, ${0.3 + glow * 0.4})`;
+                    networkType.style.boxShadow = `0 0 ${10 + glow * 15}px rgba(52, 199, 89, ${0.2 + glow * 0.3})`;
+                }
+
+                // Check chips one by one
+                if (t >= T.resultCheckChips) {
+                    chip2G.classList.add('checked');
+                }
+                if (t >= T.resultCheckChips + T.resultChipDelay) {
+                    chipLockdown.classList.add('checked');
+                }
+                if (t >= T.resultCheckChips + T.resultChipDelay * 2) {
+                    chip5GAuto.classList.add('checked');
+                }
+                if (t >= T.resultCheckChips + T.resultChipDelay * 3) {
+                    chipAirplane.classList.add('checked');
+                }
+
+                // Caption 1
+                if (t >= T.resultCaption1 && t < T.resultCaption2) {
+                    showCaption('ممکنه ۵G برگرده ✅');
+                }
+
+                // Caption 2
+                if (t >= T.resultCaption2) {
+                    showCaption('سیو کن و بفرست برای رفیقت 🔖');
+                }
+
+                // Final ease to still frame
+                if (t >= T.resultFinalEase) {
+                    const ease = 1 - Math.min(1, (t - T.resultFinalEase) / 0.5);
+                    phoneContainer.style.transform = `translate(-50%, -50%) scale(${1.15 - ease * 0.05}) translateY(${-40 + ease * 40}px)`;
+                    phoneContainer.style.transition = 'none';
+                }
+            }
+
+            // ---- Cleanup: hide elements not in their time windows ----
+            if (t >= T.hookEnd && t < T.step1Start) {
+                hideCaption();
+                chip2G.classList.remove('pop-in');
+                chipLockdown.classList.remove('pop-in');
+                chip5GAuto.classList.remove('pop-in');
+                chipAirplane.classList.remove('pop-in');
+            }
+
+            if (t >= T.step1End) {
+                simCardMini.classList.remove('visible');
+            }
+
+            if (t >= T.step2End) {
+                restartOverlay.classList.remove('visible');
+                networkType.style.textDecoration = '';
+                networkType.style.color = '';
+                networkType.style.border = '';
+            }
+
+            if (t >= T.step4End) {
+                countdownRing.classList.remove('visible');
+            }
+        }
+
+        // ============================================================
+        // BOOT
+        // ============================================================
+        async function boot() {
+            // Check debug mode
+            debugMode = window.location.search.includes('debug');
+            if (debugMode) {
+                debugTime.style.display = 'block';
+                document.getElementById('safeZone').style.display = 'block';
+            }
+
+            // Scale stage to fit window
+            function scaleStage() {
+                const vw = window.innerWidth;
+                const vh = window.innerHeight;
+                const scaleX = vw / 1080;
+                const scaleY = vh / 1920;
+                const scale = Math.min(scaleX, scaleY);
+                stage.style.transform = `scale(${scale})`;
+            }
+            scaleStage();
+            window.addEventListener('resize', scaleStage);
+
+            // Wait for fonts
+            try {
+                await document.fonts.ready;
+            } catch (e) {
+                console.warn('Font loading issue:', e);
+            }
+
+            // Extra safety for Vazirmatn
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Initialize all states
+            setNoService();
+            hideCaption();
+            showScreen(screenMain);
+            chip2G.classList.remove('pop-in', 'checked');
+            chipLockdown.classList.remove('pop-in', 'checked');
+            chip5GAuto.classList.remove('pop-in', 'checked');
+            chipAirplane.classList.remove('pop-in', 'checked');
+            document.getElementById('autoToggle').classList.add('on');
+            document.getElementById('networkList').style.opacity = '0';
+            document.getElementById('netSpinner').classList.remove('visible');
+            document.getElementById('airplaneToggle').classList.remove('on', 'airplane-on');
+            document.getElementById('check5GAuto').classList.remove('visible');
+            document.getElementById('check5GOn').classList.remove('visible');
+            document.getElementById('checkLTE').classList.remove('visible');
+            networkType.style.display = 'none';
+
+            // Start master clock
+            startTime = performance.now();
+            rafId = requestAnimationFrame(animate);
+        }
+
+        // Start everything
+        boot();
+    </script>
+</body>
+</html>
